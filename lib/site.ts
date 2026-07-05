@@ -1,7 +1,31 @@
 /**
  * Single source of truth for dealership facts.
  * Every component reads from here — never hardcode NAP data in markup.
+ *
+ * PLATFORM SEAM (Phase 10): this object IS the tenant config. The
+ * multi-tenant build resolves a DealerConfig per hostname (one config
+ * row per store) and injects it here; components don't change. Brand
+ * theming rides the same seam via the token block in globals.css.
  */
+export type DealerConfig = {
+  name: string;
+  legalName: string;
+  tagline: string;
+  address: { street: string; city: string; state: string; zip: string };
+  phone: {
+    sales: { display: string; tel: string; e164: string };
+    text: { display: string; sms: string; e164: string };
+  };
+  hours: ReadonlyArray<{
+    days: string;
+    open: string | null;
+    close: string | null;
+    schema: string | null;
+  }>;
+  disclaimer: string;
+  nav: ReadonlyArray<{ label: string; href: string }>;
+};
+
 export const site = {
   name: "AutoMax Branford",
   legalName: "AutoMax Branford",
@@ -39,6 +63,6 @@ export const site = {
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ],
-} as const;
+} as const satisfies DealerConfig;
 
 export const fullAddress = `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.zip}`;

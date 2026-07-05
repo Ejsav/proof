@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Phone } from "lucide-react";
 import { InventoryFilters } from "@/components/inventory/InventoryFilters";
+import { segments } from "@/lib/segments";
 import { VehicleCard } from "@/components/inventory/VehicleCard";
 import { buttonClasses } from "@/components/ui/Button";
 import { Section } from "@/components/ui/Section";
@@ -91,6 +93,22 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
           </a>
         </div>
       )}
+
+      <nav aria-label="Popular searches" className="mt-16 border-t border-neutral-200 pt-8">
+        <h2 className="label-caps text-ink-muted">Popular searches</h2>
+        <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-small">
+          {segments.map((s) => (
+            <li key={s.slug}>
+              <Link
+                href={`/used-cars/${s.slug}`}
+                className="text-ink-muted underline decoration-neutral-300 underline-offset-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:text-ink"
+              >
+                {s.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <p className="mt-12 text-caption text-ink-faint">{site.disclaimer}</p>
     </Section>

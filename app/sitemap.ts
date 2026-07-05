@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getVehicles } from "@/lib/inventory";
+import { segments } from "@/lib/segments";
 import { siteUrl } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -20,5 +21,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...vehiclePages];
+  const segmentPages: MetadataRoute.Sitemap = segments.map((s) => ({
+    url: siteUrl(`/used-cars/${s.slug}`),
+    changeFrequency: "daily",
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...vehiclePages, ...segmentPages];
 }
