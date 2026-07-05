@@ -1,12 +1,28 @@
 import "server-only";
 import type { LeadType } from "@/lib/leads/schema";
+import { isSupabaseServiceConfigured } from "@/lib/supabase/config";
 
 /**
- * Lead persistence seam. Today a no-op (demo build, no Supabase env yet);
- * post-signing this inserts into the Supabase `leads` table. Server
- * Actions call this — components never touch the database.
+ * Lead persistence — the repository seam for leads. Server Actions call
+ * this; components never touch the database. Demo mode (no Supabase env):
+ * no-op, the Resend/demo-log notification is the record.
  */
 export async function saveLead(type: LeadType, lead: Record<string, unknown>): Promise<void> {
-  void type;
-  void lead; // SEAM: supabase.from("leads").insert({ type, payload: lead, ... })
+  if (!isSupabaseServiceConfigured()) return;
+
+  const { createServiceClient } = await import("@/lib/supabase/server");
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("leads").insert({
+    type,
+    name: String(lead.name ?? ""),
+    phone: String(lead.phone ?? ""),
+    email: lead.email ? String(lead.email) : null,
+    vehicle_slug: lead.vehicleSlug ? String(lead.vehicleSlug) : null,
+    payload: lead,
+  });
+
+  if (error) {
+    // The notification email still fires — a DB hiccup must not lose the lead.
+    console.error("[lead:store-failed]", error.message);
+  }
 }
