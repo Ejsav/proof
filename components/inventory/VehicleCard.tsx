@@ -10,11 +10,7 @@ export function VehicleCard({ vehicle, priority = false }: { vehicle: Vehicle; p
 
   return (
     <Card as="article" interactive className="group overflow-hidden">
-      <Link
-        href={`/inventory/${vehicle.slug}`}
-        className="block focus-visible:outline-none"
-        aria-label={`${title} — ${formatPrice(vehicle.price)}`}
-      >
+      <Link href={`/inventory/${vehicle.slug}`} className="block focus-visible:outline-none">
         <div className="relative aspect-3/2 overflow-hidden bg-neutral-100">
           <Image
             src={vehicle.photos[0]}

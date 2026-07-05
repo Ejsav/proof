@@ -6,13 +6,21 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { site, fullAddress } from "@/lib/site";
+import { SITE_ORIGIN, autoDealerJsonLd, jsonLdScript } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: `${site.name} | Used Cars in Branford, CT`,
     template: `%s | ${site.name}`,
   },
   description: `Quality used cars at ${fullAddress}. Browse inventory, get pre-qualified with no impact to your credit score, or call ${site.phone.sales.display}.`,
+  alternates: { canonical: "./" },
+  openGraph: {
+    siteName: site.name,
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
@@ -39,6 +47,10 @@ export default function RootLayout({
         <main id="main">{children}</main>
         <Footer />
         <MobileActionBar />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(autoDealerJsonLd()) }}
+        />
         {process.env.NEXT_PUBLIC_GA4_ID && (
           <>
             <Script

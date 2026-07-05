@@ -12,8 +12,10 @@ import { site, fullAddress } from "@/lib/site";
 
 /**
  * Homepage hero — the one dark, cinematic moment (CLAUDE.md).
- * GSAP is permitted here only. Animates transform/opacity exclusively;
- * full prefers-reduced-motion fallback via gsap.matchMedia.
+ * Entrance is CSS-driven (hero-rise) so the LCP headline renders
+ * immediately with HTML — never gated on hydration. GSAP (permitted in
+ * the hero only) handles the ambient glow drift, a purely decorative
+ * transform loop, behind a prefers-reduced-motion media query.
  */
 export function Hero({ spotlight }: { spotlight: Vehicle | null }) {
   const scope = useRef<HTMLElement>(null);
@@ -21,37 +23,7 @@ export function Hero({ spotlight }: { spotlight: Vehicle | null }) {
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
-
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-        tl.from("[data-hero-line]", {
-          y: 56,
-          opacity: 0,
-          duration: 1.1,
-          stagger: 0.12,
-        })
-          .from(
-            "[data-hero-sub]",
-            { y: 32, opacity: 0, duration: 0.9 },
-            "-=0.7",
-          )
-          .from(
-            "[data-hero-cta]",
-            { y: 24, opacity: 0, duration: 0.8, stagger: 0.08 },
-            "-=0.6",
-          )
-          .from(
-            "[data-hero-card]",
-            { y: 40, opacity: 0, duration: 1.0 },
-            "-=0.6",
-          )
-          .from(
-            "[data-hero-trust]",
-            { opacity: 0, y: 16, duration: 0.7 },
-            "-=0.5",
-          );
-
-        // Slow ambient drift of the glow — transform only, decorative depth
         gsap.to("[data-hero-glow]", {
           xPercent: 12,
           yPercent: -8,
@@ -61,15 +33,7 @@ export function Hero({ spotlight }: { spotlight: Vehicle | null }) {
           yoyo: true,
         });
       });
-
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(
-          "[data-hero-line], [data-hero-sub], [data-hero-cta], [data-hero-card], [data-hero-trust]",
-          { clearProps: "all" },
-        );
-      });
     }, scope);
-
     return () => ctx.revert();
   }, []);
 
@@ -91,39 +55,37 @@ export function Hero({ spotlight }: { spotlight: Vehicle | null }) {
       />
       <div className="container-site relative grid items-center gap-16 py-section lg:grid-cols-[1.2fr_1fr]">
         <div>
-          <p data-hero-trust className="label-caps text-hero-text-muted">
+          <p className="hero-rise label-caps text-hero-text-muted">
             Independent used car dealer · Branford, CT
           </p>
           <h1 id="hero-heading" className="mt-6 text-display-xl font-semibold">
-            <span data-hero-line className="block">The right car.</span>
-            <span data-hero-line className="block">The right price.</span>
-            <span data-hero-line className="block text-hero-text-muted">No runaround.</span>
+            <span className="hero-rise-move block">The right car.</span>
+            <span className="hero-rise block [--rise-delay:90ms]">The right price.</span>
+            <span className="hero-rise block text-hero-text-muted [--rise-delay:180ms]">
+              No runaround.
+            </span>
           </h1>
-          <p data-hero-sub className="mt-6 max-w-lg text-body-lg text-hero-text-muted">
+          <p className="hero-rise mt-6 max-w-lg text-body-lg text-hero-text-muted [--rise-delay:260ms]">
             Inspected, market-priced vehicles on West Main Street. Get pre-qualified
             in minutes — with no impact to your credit score.
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <span data-hero-cta>
-              <Link href="/inventory" className={buttonClasses("primary", "lg")}>
-                Browse inventory
-              </Link>
-            </span>
-            <span data-hero-cta>
-              <a
-                href={site.phone.sales.tel}
-                className={buttonClasses(
-                  "secondary",
-                  "lg",
-                  "border-hero-line bg-transparent text-hero-text hover:border-hero-text hover:bg-transparent",
-                )}
-              >
-                <Phone className="size-5" aria-hidden="true" />
-                {site.phone.sales.display}
-              </a>
-            </span>
+          <div className="hero-rise mt-10 flex flex-wrap gap-4 [--rise-delay:340ms]">
+            <Link href="/inventory" className={buttonClasses("primary", "lg")}>
+              Browse inventory
+            </Link>
+            <a
+              href={site.phone.sales.tel}
+              className={buttonClasses(
+                "secondary",
+                "lg",
+                "border-hero-line bg-transparent text-hero-text hover:border-hero-text hover:bg-transparent",
+              )}
+            >
+              <Phone className="size-5" aria-hidden="true" />
+              {site.phone.sales.display}
+            </a>
           </div>
-          <p data-hero-trust className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 text-small text-hero-text-muted">
+          <p className="hero-rise mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 text-small text-hero-text-muted [--rise-delay:420ms]">
             <span className="inline-flex items-center gap-2">
               <MapPin className="size-4" aria-hidden="true" />
               {fullAddress}
@@ -133,7 +95,7 @@ export function Hero({ spotlight }: { spotlight: Vehicle | null }) {
         </div>
 
         {spotlight && (
-          <div data-hero-card>
+          <div className="hero-rise [--rise-delay:300ms]">
             <Link
               href={`/inventory/${spotlight.slug}`}
               className="group block overflow-hidden rounded-xl border border-hero-line bg-hero-surface shadow-lg transition-transform duration-(--duration-base) ease-(--ease-out) hover:-translate-y-1"

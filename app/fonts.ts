@@ -13,8 +13,10 @@ export const clashDisplay = localFont({
   variable: "--font-clash",
   display: "swap",
   weight: "200 700",
-  fallback: ["Georgia", "serif"],
-  adjustFontFallback: false,
+  // Off the critical path: headline paints instantly with the
+  // metric-adjusted fallback, brand font swaps in quietly (CLS 0).
+  preload: false,
+  fallback: ["Arial"],
 });
 
 export const generalSans = localFont({
@@ -32,6 +34,8 @@ export const generalSans = localFont({
   ],
   variable: "--font-general",
   display: "swap",
-  fallback: ["Helvetica Neue", "Arial", "sans-serif"],
-  adjustFontFallback: false,
+  // Not preloaded: body text swaps in gracefully; only the display font
+  // (the LCP headline) rides the critical path.
+  preload: false,
+  fallback: ["Arial"],
 });

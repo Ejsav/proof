@@ -16,6 +16,7 @@ import {
   getVehicles,
   vehicleTitle,
 } from "@/lib/inventory";
+import { formatVehicleOgDescription, jsonLdScript, vehicleJsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
 
 type Params = { slug: string };
@@ -36,6 +37,11 @@ export async function generateMetadata({
   return {
     title: `${vehicleTitle(vehicle)} — ${formatPrice(vehicle.price)}`,
     description: `${vehicleTitle(vehicle)} with ${formatMiles(vehicle.mileage)} at AutoMax Branford. Book a test drive or call ${site.phone.sales.display}.`,
+    openGraph: {
+      title: `${vehicleTitle(vehicle)} — ${formatPrice(vehicle.price)}`,
+      description: formatVehicleOgDescription(vehicle),
+      type: "website",
+    },
   };
 }
 
@@ -61,6 +67,10 @@ export default async function VehiclePage({ params }: { params: Promise<Params> 
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(vehicleJsonLd(vehicle)) }}
+      />
       <Section as="header" size="sm">
         <Link
           href="/inventory"

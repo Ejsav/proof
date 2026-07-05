@@ -37,7 +37,7 @@
   /* ---- Ink: semantic text colors ---- */
   --color-ink: #23201b;
   --color-ink-muted: #67604f;
-  --color-ink-faint: #877f72;
+  --color-ink-faint: #6f695b; /* AA on paper/white at caption sizes */
 
   /* ---- Accent: AutoMax red. CTAs + price emphasis ONLY ---- */
   --color-accent-50: #fdf2f2;
@@ -195,4 +195,37 @@
   margin-inline: auto;
   max-width: 80rem;
   padding-inline: var(--spacing-gutter);
+}
+
+/* Hero entrance — CSS-driven so the LCP headline is never gated on JS.
+   Stagger via --rise-delay; killed globally by prefers-reduced-motion. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility hero-rise {
+  animation: hero-rise 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* Transform-only variant for the LCP headline line: paints at first
+   frame (LCP-safe) while still moving with the rest of the entrance. */
+@keyframes hero-rise-move {
+  from {
+    transform: translateY(2.5rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@utility hero-rise-move {
+  animation: hero-rise-move 0.9s var(--ease-out-expo) both;
 }

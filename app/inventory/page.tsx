@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Phone } from "lucide-react";
 import { InventoryFilters } from "@/components/inventory/InventoryFilters";
 import { VehicleCard } from "@/components/inventory/VehicleCard";
@@ -55,15 +54,22 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
       <h1 className="mt-2 text-h1">Browse our inventory</h1>
 
       <div className="mt-10 border-y border-neutral-200 py-6">
-        <Suspense>
-          <InventoryFilters makes={makes} />
-        </Suspense>
+        <InventoryFilters
+          makes={makes}
+          values={{
+            bodyStyle: first(params.bodyStyle) ?? "",
+            make: first(params.make) ?? "",
+            maxPrice: first(params.maxPrice) ?? "",
+            sort: first(params.sort) ?? "",
+          }}
+        />
       </div>
 
       <p className="mt-6 text-small text-ink-muted" role="status">
         {vehicles.length} vehicle{vehicles.length === 1 ? "" : "s"}
       </p>
 
+      <h2 className="sr-only">Available vehicles</h2>
       {vehicles.length > 0 ? (
         <ul className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {vehicles.map((vehicle, i) => (

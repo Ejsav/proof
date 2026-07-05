@@ -36,15 +36,21 @@ export default function TradeInPage() {
 
       <div className="mt-12 grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
         <div>
+          {/* CSS entrance, not Reveal: above the fold on mobile — must not
+              gate LCP on hydration */}
           <ol className="space-y-8">
             {steps.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={i * 0.08}>
+              <li
+                key={s.title}
+                className="hero-rise"
+                style={{ "--rise-delay": `${i * 90}ms` } as React.CSSProperties}
+              >
                 <h2 className="text-h3">
                   <span className="text-ink-faint">{i + 1}. </span>
                   {s.title}
                 </h2>
                 <p className="mt-2 max-w-sm text-body text-ink-muted">{s.body}</p>
-              </Reveal>
+              </li>
             ))}
           </ol>
         </div>

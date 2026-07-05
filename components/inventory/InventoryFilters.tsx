@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
@@ -19,18 +19,31 @@ const sorts = [
   ["mileage-asc", "Mileage: lowest"],
 ] as const;
 
-export function InventoryFilters({ makes }: { makes: string[] }) {
+export type FilterValues = {
+  bodyStyle: string;
+  make: string;
+  maxPrice: string;
+  sort: string;
+};
+
+/**
+ * Server-driven filter state (props from searchParams) — no
+ * useSearchParams/Suspense, so the row renders in the first paint
+ * with zero layout shift.
+ */
+export function InventoryFilters({ makes, values }: { makes: string[]; values: FilterValues }) {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const hasFilters = ["bodyStyle", "make", "maxPrice", "sort"].some((k) => params.has(k));
+  const hasFilters = Boolean(values.bodyStyle || values.make || values.maxPrice || values.sort);
 
-  function update(key: string, value: string) {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value);
-    else next.delete(key);
+  function update(key: keyof FilterValues, value: string) {
+    const next = new URLSearchParams();
+    const merged = { ...values, [key]: value };
+    for (const [k, v] of Object.entries(merged)) {
+      if (v && !(k === "sort" && v === "featured")) next.set(k, v);
+    }
     startTransition(() => {
       router.replace(next.size ? `${pathname}?${next}` : pathname, { scroll: false });
     });
@@ -45,7 +58,7 @@ export function InventoryFilters({ makes }: { makes: string[] }) {
       <Select
         label="Body style"
         name="bodyStyle"
-        value={params.get("bodyStyle") ?? ""}
+        value={values.bodyStyle}
         onChange={(e) => update("bodyStyle", e.target.value)}
         className="w-40"
       >
@@ -59,7 +72,7 @@ export function InventoryFilters({ makes }: { makes: string[] }) {
       <Select
         label="Make"
         name="make"
-        value={params.get("make") ?? ""}
+        value={values.make}
         onChange={(e) => update("make", e.target.value)}
         className="w-40"
       >
@@ -73,7 +86,7 @@ export function InventoryFilters({ makes }: { makes: string[] }) {
       <Select
         label="Max price"
         name="maxPrice"
-        value={params.get("maxPrice") ?? ""}
+        value={values.maxPrice}
         onChange={(e) => update("maxPrice", e.target.value)}
         className="w-44"
       >
@@ -87,7 +100,7 @@ export function InventoryFilters({ makes }: { makes: string[] }) {
       <Select
         label="Sort by"
         name="sort"
-        value={params.get("sort") ?? "featured"}
+        value={values.sort || "featured"}
         onChange={(e) => update("sort", e.target.value === "featured" ? "" : e.target.value)}
         className="w-48"
       >
