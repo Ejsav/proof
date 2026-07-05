@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* ============================================================
+   AutoMax Branford — Design Tokens
+   Tailwind v4: @theme IS the tailwind config. Every color,
+   type size, radius, shadow and easing used in components is
+   defined here. Components never use the default palette.
+
+   Spacing discipline: 8px base grid — spacing utilities are
+   used in even steps (2, 4, 6, 8 → 8/16/24/32px…). Odd steps
+   are reserved for optical corrections only.
+   ============================================================ */
+
+@theme {
+  /* Reset defaults: components must use tokens below */
+  --color-*: initial;
+  --font-*: initial;
+  --shadow-*: initial;
+  --ease-*: initial;
+  --text-*: initial;
+
+  /* ---- Neutrals: warm gray, paper → ink ---- */
+  --color-white: #ffffff;
+  --color-paper: #faf9f7; /* page canvas */
+  --color-neutral-50: #faf9f7;
+  --color-neutral-100: #f3f1ee;
+  --color-neutral-200: #e7e4df;
+  --color-neutral-300: #d5d1c9;
+  --color-neutral-400: #aea89d;
+  --color-neutral-500: #877f72;
+  --color-neutral-600: #67604f;
+  --color-neutral-700: #524c42;
+  --color-neutral-800: #38332c;
+  --color-neutral-900: #23201b;
+  --color-neutral-950: #161411;
+
+  /* ---- Ink: semantic text colors ---- */
+  --color-ink: #23201b;
+  --color-ink-muted: #67604f;
+  --color-ink-faint: #877f72;
+
+  /* ---- Accent: AutoMax red. CTAs + price emphasis ONLY ---- */
+  --color-accent-50: #fdf2f2;
+  --color-accent-100: #fbe2e3;
+  --color-accent-600: #d22630; /* working value — confirm from logo before Phase 3 */
+  --color-accent-700: #b01f28;
+  --color-accent-800: #8e1a21;
+
+  /* ---- Dark hero (homepage hero only) ---- */
+  --color-hero: #12100d;
+  --color-hero-surface: #1d1a16;
+  --color-hero-line: #332f28;
+  --color-hero-text: #f5f3ef;
+  --color-hero-text-muted: #a49c8f;
+
+  /* ---- Feedback ---- */
+  --color-success: #1a7f4b;
+  --color-error: #c22026;
+
+  /* ---- Fonts (wired in app/fonts.ts via next/font/local) ---- */
+  --font-display: var(--font-clash), Georgia, serif;
+  --font-sans: var(--font-general), "Helvetica Neue", Arial, sans-serif;
+
+  /* ---- Fluid type scale (clamp); display lh 1.05–1.2, body 1.5–1.6 ---- */
+  --text-display-xl: clamp(2.75rem, 1.75rem + 4.5vw, 5.25rem);
+  --text-display-xl--line-height: 1.05;
+  --text-display-xl--letter-spacing: -0.02em;
+  --text-display: clamp(2.25rem, 1.6rem + 3vw, 3.75rem);
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.015em;
+  --text-h1: clamp(1.875rem, 1.5rem + 1.7vw, 2.75rem);
+  --text-h1--line-height: 1.12;
+  --text-h1--letter-spacing: -0.01em;
+  --text-h2: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --text-h2--line-height: 1.2;
+  --text-h2--letter-spacing: -0.005em;
+  --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.25;
+  --text-body-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.1em; /* uppercase labels: min 0.08em */
+
+  /* ---- Spacing (4px unit; use even steps for the 8px grid) ---- */
+  --spacing: 0.25rem;
+  --spacing-gutter: clamp(1rem, 4vw, 2rem);
+  --spacing-section: clamp(4rem, 6vw + 2rem, 7.5rem);
+  --spacing-section-sm: clamp(2.5rem, 4vw + 1rem, 5rem);
+
+  /* ---- Radius ---- */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* ---- Shadows: subtle, single downward direction ---- */
+  --shadow-xs: 0 1px 2px rgb(22 20 17 / 0.05);
+  --shadow-sm: 0 2px 8px -2px rgb(22 20 17 / 0.08);
+  --shadow-md: 0 8px 24px -8px rgb(22 20 17 / 0.12);
+  --shadow-lg: 0 20px 48px -16px rgb(22 20 17 / 0.18);
+  --shadow-accent: 0 8px 20px -8px rgb(210 38 48 / 0.45);
+
+  /* ---- Easing: custom curves only, no browser defaults ---- */
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1); /* quart — UI default */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* reveals */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* layout shifts */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful micro */
+
+  /* ---- Motion durations ---- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Reserve room for the sticky mobile action bar */
+  @media (max-width: 767px) {
+    body {
+      padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--color-accent-600);
+    color: var(--color-white);
+  }
+
+  /* Real focus states, everywhere */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  /* Reduced motion: disable animation globally */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+@utility label-caps {
+  font-size: var(--text-caption);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+@utility container-site {
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: var(--spacing-gutter);
+}
