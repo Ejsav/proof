@@ -42,10 +42,14 @@ export type Vehicle = z.infer<typeof vehicleSchema>;
 /** Raw shape accepted from a data source, pre-validation */
 export type VehicleRecord = z.input<typeof vehicleSchema>;
 
+export const INVENTORY_SORTS = ["featured", "price-asc", "price-desc", "year-desc", "mileage-asc"] as const;
+export type InventorySort = (typeof INVENTORY_SORTS)[number];
+
 export type InventoryFilters = {
   bodyStyle?: Vehicle["bodyStyle"];
   make?: string;
   maxPrice?: number;
+  sort?: InventorySort;
 };
 
 async function loadVehicles(): Promise<Vehicle[]> {
@@ -54,6 +58,14 @@ async function loadVehicles(): Promise<Vehicle[]> {
   return z.array(vehicleSchema).parse(sampleVehicles);
 }
 
+const sorters: Record<InventorySort, (a: Vehicle, b: Vehicle) => number> = {
+  featured: (a, b) => Number(b.featured) - Number(a.featured) || a.price - b.price,
+  "price-asc": (a, b) => a.price - b.price,
+  "price-desc": (a, b) => b.price - a.price,
+  "year-desc": (a, b) => b.year - a.year,
+  "mileage-asc": (a, b) => a.mileage - b.mileage,
+};
+
 export async function getVehicles(filters: InventoryFilters = {}): Promise<Vehicle[]> {
   const vehicles = await loadVehicles();
   return vehicles
@@ -61,7 +73,24 @@ export async function getVehicles(filters: InventoryFilters = {}): Promise<Vehic
     .filter((v) => (filters.bodyStyle ? v.bodyStyle === filters.bodyStyle : true))
     .filter((v) => (filters.make ? v.make.toLowerCase() === filters.make.toLowerCase() : true))
     .filter((v) => (filters.maxPrice ? v.price <= filters.maxPrice : true))
-    .sort((a, b) => Number(b.featured) - Number(a.featured) || a.price - b.price);
+    .sort(sorters[filters.sort ?? "featured"]);
+}
+
+export async function getMakes(): Promise<string[]> {
+  const vehicles = await loadVehicles();
+  return [...new Set(vehicles.filter((v) => v.status !== "sold").map((v) => v.make))].sort();
+}
+
+export async function getSimilarVehicles(vehicle: Vehicle, limit = 3): Promise<Vehicle[]> {
+  const vehicles = await loadVehicles();
+  return vehicles
+    .filter((v) => v.id !== vehicle.id && v.status === "available")
+    .sort(
+      (a, b) =>
+        Number(b.bodyStyle === vehicle.bodyStyle) - Number(a.bodyStyle === vehicle.bodyStyle) ||
+        Math.abs(a.price - vehicle.price) - Math.abs(b.price - vehicle.price),
+    )
+    .slice(0, limit);
 }
 
 export async function getFeaturedVehicles(limit = 4): Promise<Vehicle[]> {
