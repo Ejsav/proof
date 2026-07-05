@@ -2,7 +2,9 @@
 
 import type { z } from "zod";
 import { getVehicleBySlug, vehicleTitle } from "@/lib/inventory";
-import { notifyLead } from "@/lib/leads/notify";
+import { buildAdfXml, type AdfLead } from "@/lib/leads/adf";
+import { notifyAdf, notifyLead } from "@/lib/leads/notify";
+import { sendLeadAutoresponse } from "@/lib/leads/sms";
 import {
   MIN_TIME_ON_PAGE_MS,
   contactSchema,
@@ -60,9 +62,21 @@ function contactLines(lead: { name: string; phone: string; email?: string }): st
   ];
 }
 
-async function record(type: LeadType, subject: string, lead: Record<string, unknown>, lines: string[]) {
+async function record(
+  type: LeadType,
+  subject: string,
+  lead: Record<string, unknown>,
+  lines: string[],
+  adf: AdfLead,
+) {
   await saveLead(type, lead);
   await notifyLead({ type, subject, lines });
+  // CRM handoff + speed-to-lead SMS: both no-op until their env vars land,
+  // and neither can block or lose the primary notification above.
+  await Promise.allSettled([
+    notifyAdf(type, subject, buildAdfXml(adf)),
+    sendLeadAutoresponse(type, adf.phone),
+  ]);
 }
 
 export async function submitTestDriveLead(
@@ -78,11 +92,26 @@ export async function submitTestDriveLead(
       };
     }
     const title = vehicleTitle(vehicle);
-    await record("test_drive", `Test drive lead: ${title} — ${lead.name}`, lead, [
-      `Vehicle: ${title} (${lead.vehicleSlug})`,
-      ...contactLines(lead),
-      `Preferred time: ${lead.window}`,
-    ]);
+    await record(
+      "test_drive",
+      `Test drive lead: ${title} — ${lead.name}`,
+      lead,
+      [`Vehicle: ${title} (${lead.vehicleSlug})`, ...contactLines(lead), `Preferred time: ${lead.window}`],
+      {
+        type: "test_drive",
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email || undefined,
+        comments: `Test drive request — preferred time: ${lead.window}`,
+        vehicle: {
+          year: vehicle.year,
+          make: vehicle.make,
+          model: vehicle.model,
+          trim: vehicle.trim,
+          stock: vehicle.stockNumber,
+        },
+      },
+    );
   });
 }
 
@@ -91,13 +120,25 @@ export async function submitPrequalLead(
   formData: FormData,
 ): Promise<LeadFormState> {
   return processLead(formData, prequalSchema, async (lead) => {
-    await record("prequal", `Financing pre-qual lead — ${lead.name}`, lead, [
-      ...contactLines(lead),
-      `Employment: ${lead.employment}`,
-      `Income range: ${lead.income}`,
-      `Down payment: ${lead.downPayment}`,
-      `Credit (self-reported): ${lead.creditTier}`,
-    ]);
+    await record(
+      "prequal",
+      `Financing pre-qual lead — ${lead.name}`,
+      lead,
+      [
+        ...contactLines(lead),
+        `Employment: ${lead.employment}`,
+        `Income range: ${lead.income}`,
+        `Down payment: ${lead.downPayment}`,
+        `Credit (self-reported): ${lead.creditTier}`,
+      ],
+      {
+        type: "prequal",
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email || undefined,
+        comments: `Pre-qualification: ${lead.employment}, income ${lead.income}, down ${lead.downPayment}, credit ${lead.creditTier}`,
+      },
+    );
   });
 }
 
@@ -106,12 +147,24 @@ export async function submitTradeInLead(
   formData: FormData,
 ): Promise<LeadFormState> {
   return processLead(formData, tradeInSchema, async (lead) => {
-    await record("trade_in", `Trade-in lead: ${lead.year} ${lead.make} ${lead.model} — ${lead.name}`, lead, [
-      `Vehicle: ${lead.year} ${lead.make} ${lead.model}`,
-      `Mileage: ${lead.mileage.toLocaleString("en-US")} mi`,
-      `Condition: ${lead.condition}`,
-      ...contactLines(lead),
-    ]);
+    await record(
+      "trade_in",
+      `Trade-in lead: ${lead.year} ${lead.make} ${lead.model} — ${lead.name}`,
+      lead,
+      [
+        `Vehicle: ${lead.year} ${lead.make} ${lead.model}`,
+        `Mileage: ${lead.mileage.toLocaleString("en-US")} mi`,
+        `Condition: ${lead.condition}`,
+        ...contactLines(lead),
+      ],
+      {
+        type: "trade_in",
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email || undefined,
+        comments: `Trade-in: ${lead.year} ${lead.make} ${lead.model}, ${lead.mileage} mi, ${lead.condition}`,
+      },
+    );
   });
 }
 
@@ -120,10 +173,18 @@ export async function submitContactLead(
   formData: FormData,
 ): Promise<LeadFormState> {
   return processLead(formData, contactSchema, async (lead) => {
-    await record("contact", `Website inquiry — ${lead.name}`, lead, [
-      ...contactLines(lead),
-      `Message:`,
-      lead.message,
-    ]);
+    await record(
+      "contact",
+      `Website inquiry — ${lead.name}`,
+      lead,
+      [...contactLines(lead), `Message:`, lead.message],
+      {
+        type: "contact",
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email || undefined,
+        comments: lead.message,
+      },
+    );
   });
 }

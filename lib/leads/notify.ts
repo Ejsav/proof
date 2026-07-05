@@ -35,3 +35,23 @@ export async function notifyLead(opts: {
     console.error(`[lead:notify-failed] ${opts.type}`, error, "\n" + body);
   }
 }
+
+/**
+ * Deliver ADF/XML to the dealer CRM's lead inbox (VinSolutions et al.
+ * ingest leads from a designated email address). No-op until
+ * LEAD_ADF_EMAIL is configured.
+ */
+export async function notifyAdf(type: LeadType, subject: string, adfXml: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.LEAD_ADF_EMAIL;
+  if (!apiKey || !to) return;
+
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: `${site.name} Leads <onboarding@resend.dev>`,
+    to,
+    subject,
+    text: adfXml,
+  });
+  if (error) console.error(`[lead:adf-failed] ${type}`, error);
+}
