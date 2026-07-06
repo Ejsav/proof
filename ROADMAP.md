@@ -1,5 +1,10 @@
 # Roadmap — From Demo to Multi-Million-Dollar Asset
 
+> **Execution status:** Track A (Phases 4–6) is BUILT and Lighthouse-certified.
+> Track B/C code seams are BUILT (feed ingestion, ADF/XML, SMS, segment pages,
+> tenant config); their live pieces await accounts and a signed dealer — see
+> `docs/PLATFORM.md`. Remaining inputs are listed in README's launch checklist.
+
 The honest framing first: a website for one used car dealership is worth a
 retainer, not millions. The multi-million-dollar version of this asset is the
 **productized platform underneath it** — a conversion-first lead engine that
